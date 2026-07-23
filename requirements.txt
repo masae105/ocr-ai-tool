@@ -1,2 +1,5 @@
+pandas
+openpyxl
 Pillow
-pypdf
+pytesseract
+pdf2image
