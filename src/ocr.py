@@ -25,6 +25,6 @@ if __name__ == "__main__":
 
     image_path = "sample_data/images/test.png"
 
-    result = image_to_text(image_path)
+    result = extract_text(image_path)
 
     print(result)

@@ -1,16 +1,28 @@
-print("main.py start")
-
-
 from loader import load_file
+from ocr import extract_text
+from excel import save_to_excel
 
 
 def main():
 
-    file_path = "sample_data/images/test.png"
+    file_path = "sample_data/images/test2.png"
 
-    file = load_file(file_path)
+    # ファイル読み込み
+    path = load_file(file_path)
 
-    print("読み込み成功:", file)
+    # OCR実行
+    text = extract_text(path)
+
+    print("===== OCR結果 =====")
+    print(text)
+
+    # Excel保存
+    save_to_excel(
+        text,
+        "output/result.xlsx"
+    )
+
+    print("処理が完了しました！")
 
 
 if __name__ == "__main__":
