@@ -1,28 +1,35 @@
 from loader import load_file
 from ocr import extract_text
 from excel import save_to_excel
+from pdf import pdf_to_images
 
 
 def main():
 
-    file_path = "sample_data/images/test2.png"
+    file_path = "sample_data/pdf/test.pdf"
 
     # ファイル読み込み
     path = load_file(file_path)
 
-    # OCR実行
-    text = extract_text(path)
+    # PDFを画像に変換
+    images = pdf_to_images(path)
 
-    print("===== OCR結果 =====")
-    print(text)
+    results = []
+
+    # 各ページをOCR
+    for image in images:
+        text = extract_text(image)
+        results.append(text)
+
 
     # Excel保存
-    save_to_excel(
-        text,
-        "output/result.xlsx"
-    )
+    output_path = "output/result.xlsx"
 
-    print("処理が完了しました！")
+    save_to_excel(
+        results,
+        output_path
+
+    )
 
 
 if __name__ == "__main__":
