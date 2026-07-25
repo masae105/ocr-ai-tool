@@ -17,26 +17,32 @@ def extract_invoice_data(text):
 
     # 日付
     date = re.search(
-    r"\d{4}\s*年?\s*\d{1,2}\s*月?\s*\d{1,2}",
-    text
+        r"\d{4}\s*年?\s*\d{1,2}\s*月?\s*\d{1,2}\s*日?",
+        text
     )
 
     if date:
         data["請求日"] = date.group()
 
-    print("===== OCR全文 =====")
-    print(text)
 
     # 金額
     price = re.search(
-    r"(合\s*計|総\s*額|請求\s*金額).*?([0-9０-９,，]+)\s*円?",
-    text
+        r"(合\s*計|総\s*額|請求\s*金額|合計金額).*?([0-9０-９,，.．]+)",
+        text
     )
-    print("===== 金額検索結果 =====")
-    print(price.groups() if price else "None")
 
     if price:
-        data["合計金額"] = price.group(2)
+        amount = price.group(2)
+
+        # 全角数字を半角へ変換
+        amount = amount.translate(
+            str.maketrans("０１２３４５６７８９", "0123456789")
+        )
+
+        # カンマ・ピリオド除去
+        amount = re.sub(r"[,.．，]", "", amount)
+
+        data["合計金額"] = amount
 
 
     return data

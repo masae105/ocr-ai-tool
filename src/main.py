@@ -20,7 +20,6 @@ def main():
 
     results = []
 
-    # 各ページをOCR
     for image in images:
 
         # 前処理
@@ -37,13 +36,19 @@ def main():
         print(text)
 
 
+        # OCR文字補正
+        text = clean_text(text)
+
+        print("===== OCR全文 =====")
+        print(text)
+
+
         # 項目抽出
         data = extract_invoice_data(text)
 
         print("===== 抽出結果 =====")
         print(data)
 
-        text = clean_text(text)
 
         results.append(text)
 
