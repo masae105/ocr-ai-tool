@@ -2,23 +2,49 @@ from loader import load_file
 from ocr import extract_text
 from excel import save_to_excel
 from pdf import pdf_to_images
+from preprocess import preprocess_image
+from cleaner import clean_text
+from extractor import extract_invoice_data
+from PIL import Image
 
 
 def main():
 
-    file_path = "sample_data/pdf/test.pdf"
+    file_path = "sample_data/pdf/invoice.png"
 
     # ファイル読み込み
     path = load_file(file_path)
 
-    # PDFを画像に変換
-    images = pdf_to_images(path)
+    # 画像の場合
+    images = [Image.open(path)]
 
     results = []
 
     # 各ページをOCR
     for image in images:
-        text = extract_text(image)
+
+        # 前処理
+        processed_image = preprocess_image(image)
+
+        # デバッグ保存
+        processed_image.save("debug.png")
+
+
+        # OCR
+        text = extract_text(processed_image)
+
+        print("===== OCR結果 =====")
+        print(text)
+
+
+        # 項目抽出
+        data = extract_invoice_data(text)
+
+        print("===== 抽出結果 =====")
+        print(data)
+
+        text = clean_text(text)
+
         results.append(text)
 
 
