@@ -20,13 +20,18 @@ def clean_text(text):
         "請求例殺": "請求金額",
         "合計全額": "合計金額",
         "昌": "円",
-
-        # 商品名補正
-        "商品きA": "商品A",
     }
 
+           # 商品名補正
+    product_replacements = {
+        "商品きA": "商品A",
+    }
+    
 
     for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    for old, new in product_replacements.items():
         text = text.replace(old, new)
 
 
