@@ -1,5 +1,7 @@
 import os
 
+from PIL import Image
+
 from loader import load_file
 from ocr import extract_text
 from excel import save_to_excel
@@ -8,18 +10,43 @@ from cleaner import clean_text
 from extractor import extract_invoice_data
 from validator import check_total_amount
 
-from PIL import Image
+
+
+IMAGE_EXTENSIONS = (
+    ".png",
+    ".jpg",
+    ".jpeg"
+)
+
 
 
 def main():
+    """
+    請求書OCR処理のメイン処理
+
+    処理内容:
+    画像読み込み
+    ↓
+    OCR
+    ↓
+    文字補正
+    ↓
+    データ抽出
+    ↓
+    金額検証
+    ↓
+    Excel出力
+    """
 
     folder_path = "sample_data/invoices"
 
     results = []
 
 
-    # フォルダ内の請求書を取得
-    files = os.listdir(folder_path)
+    files = [
+        f for f in os.listdir(folder_path)
+        if f.lower().endswith(IMAGE_EXTENSIONS)
+    ]
 
 
     for file in files:
@@ -29,7 +56,6 @@ def main():
             file
         )
 
-
         # ファイル読み込み
         path = load_file(file_path)
 
@@ -38,15 +64,15 @@ def main():
         image = Image.open(path)
 
 
-        # 前処理
+        # 画像前処理
         processed_image = preprocess_image(image)
 
 
-        # デバッグ保存
+        # デバッグ用画像保存
         processed_image.save("debug.png")
 
 
-        # OCR
+        # OCR実行
         text = extract_text(processed_image)
 
         print("===== OCR結果 =====")
@@ -56,29 +82,30 @@ def main():
         # OCR文字補正
         text = clean_text(text)
 
-        print("===== OCR全文 =====")
+        print("===== OCR補正後 =====")
         print(text)
 
 
-        # 項目抽出
+        # 請求書データ抽出
         data = extract_invoice_data(text)
 
         print("===== 抽出結果 =====")
         print(data)
 
 
-        # 金額チェック
+        # 金額検証
         data = check_total_amount(data)
 
         print("===== 検証結果 =====")
         print(data)
 
 
+        # 結果保存用リストへ追加
         results.append(data)
 
 
 
-    # Excel保存
+    # Excel出力
     output_path = "output/result.xlsx"
 
 
@@ -86,6 +113,7 @@ def main():
         results,
         output_path
     )
+
 
 
 if __name__ == "__main__":

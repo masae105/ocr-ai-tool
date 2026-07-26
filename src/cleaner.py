@@ -2,8 +2,18 @@ import re
 
 
 def clean_text(text):
+    """
+    OCR結果の文字補正を行う
+
+    処理内容:
+    ・OCR誤認識修正
+    ・数字表記統一
+    ・請求書特有の誤認識修正
+    ・不要な空白削除
+    """
 
     replacements = {
+
         # 数字・文字補正
         "０": "0",
         "１": "1",
@@ -22,15 +32,19 @@ def clean_text(text):
         "昌": "円",
     }
 
-           # 商品名補正
+
+    # 商品名補正
     product_replacements = {
         "商品きA": "商品A",
     }
-    
 
+
+    # 文字置換
     for old, new in replacements.items():
         text = text.replace(old, new)
 
+
+    # 商品名補正
     for old, new in product_replacements.items():
         text = text.replace(old, new)
 
@@ -46,15 +60,16 @@ def clean_text(text):
         text
     )
 
-    # 連続スペースを1つに変換
+
+    # 連続スペース削除
     text = re.sub(
         r"[ \u3000]+",
         " ",
-        text    
+        text
     )
 
 
-    # 前後の空白・改行削除
+    # 前後空白削除
     text = text.strip()
 
 
