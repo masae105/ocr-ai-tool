@@ -1,30 +1,46 @@
+import os
+
 from loader import load_file
 from ocr import extract_text
 from excel import save_to_excel
-from pdf import pdf_to_images
 from preprocess import preprocess_image
 from cleaner import clean_text
 from extractor import extract_invoice_data
-from PIL import Image
 from validator import check_total_amount
+
+from PIL import Image
 
 
 def main():
 
-    file_path = "sample_data/pdf/invoice.png"
-
-    # ファイル読み込み
-    path = load_file(file_path)
-
-    # 画像の場合
-    images = [Image.open(path)]
+    folder_path = "sample_data/invoices"
 
     results = []
 
-    for image in images:
+
+    # フォルダ内の請求書を取得
+    files = os.listdir(folder_path)
+
+
+    for file in files:
+
+        file_path = os.path.join(
+            folder_path,
+            file
+        )
+
+
+        # ファイル読み込み
+        path = load_file(file_path)
+
+
+        # 画像読み込み
+        image = Image.open(path)
+
 
         # 前処理
         processed_image = preprocess_image(image)
+
 
         # デバッグ保存
         processed_image.save("debug.png")
@@ -47,22 +63,28 @@ def main():
         # 項目抽出
         data = extract_invoice_data(text)
 
+        print("===== 抽出結果 =====")
+        print(data)
+
+
+        # 金額チェック
         data = check_total_amount(data)
 
-        print("===== 抽出結果 =====")
+        print("===== 検証結果 =====")
         print(data)
 
 
         results.append(data)
 
 
+
     # Excel保存
     output_path = "output/result.xlsx"
+
 
     save_to_excel(
         results,
         output_path
-
     )
 
 
