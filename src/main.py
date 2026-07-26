@@ -6,6 +6,7 @@ from preprocess import preprocess_image
 from cleaner import clean_text
 from extractor import extract_invoice_data
 from PIL import Image
+from validator import check_total_amount
 
 
 def main():
@@ -46,11 +47,13 @@ def main():
         # 項目抽出
         data = extract_invoice_data(text)
 
+        data = check_total_amount(data)
+
         print("===== 抽出結果 =====")
         print(data)
 
 
-        results.append(text)
+        results.append(data)
 
 
     # Excel保存

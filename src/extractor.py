@@ -5,6 +5,15 @@ def extract_invoice_data(text):
 
     data = {}
 
+        # 会社名
+    company = re.search(
+        r"(株式会社\s*\S+)",
+        text
+    )
+
+    if company:
+        data["会社名"] = company.group(1)
+
     # 明細
     data["明細"] = []
 
