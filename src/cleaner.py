@@ -35,8 +35,19 @@ def clean_text(text):
 
     # 商品名補正
     product_replacements = {
+        "HLSGLUM 1": "商品B",
+        "HLSGLUM": "商品B",
         "商品きA": "商品A",
     }
+
+
+    product_replacements = dict(
+        sorted(
+            product_replacements.items(),
+            key=lambda x: len(x[0]),
+            reverse=True
+        )
+    )
 
 
     # 文字置換

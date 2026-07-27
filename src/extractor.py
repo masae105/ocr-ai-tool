@@ -141,6 +141,14 @@ def extract_invoice_data(text):
                 .strip()
             )
 
+            # 商品名末尾の不要な数字削除
+            # 例: 商品B 1 → 商品B
+            item_name = re.sub(
+                r"\s+\d+$",
+                "",
+                item_name
+)
+
             amount = normalize_amount(
                 item.group(2)
             )
