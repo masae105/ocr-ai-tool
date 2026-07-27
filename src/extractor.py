@@ -1,6 +1,23 @@
 import re
+import json
+import os
 
+def load_invoice_patterns():
+    """
+    請求書抽出パターン(JSON)を読み込む
+    """
 
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "data",
+        "invoice_patterns.json"
+    )
+
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+    
 def normalize_amount(value):
     """
     金額文字列を整形する
@@ -32,6 +49,10 @@ def normalize_amount(value):
 
 
 def extract_invoice_data(text):
+
+    data = {}
+
+    patterns = load_invoice_patterns()
     """
     OCR結果から請求書データを抽出する
 
@@ -51,7 +72,7 @@ def extract_invoice_data(text):
             抽出した請求書データ
     """
 
-    data = {}
+   
 
     # ------------------------
     # 会社名抽出
@@ -70,42 +91,55 @@ def extract_invoice_data(text):
     # 請求番号抽出
     # ------------------------
 
-    invoice_no = re.search(
-        r"請求.{0,2}[:：]?\s*(INV-\d+)",
-        text
-    )
+    for keyword in patterns["請求番号"]:
 
-    if invoice_no:
-        data["請求番号"] = invoice_no.group(1)
+        invoice_no = re.search(
+            rf"{keyword}.*?([A-Za-z0-9]+-\d+)",
+            text
+        )
+
+        if invoice_no:
+            data["請求番号"] = invoice_no.group(1)
+            break
 
 
     # ------------------------
     # 請求日抽出
     # ------------------------
 
-    date = re.search(
-        r"\d{4}\s*年?\s*\d{1,2}\s*月?\s*\d{1,2}\s*日?",
+    for keyword in patterns["請求日"]:
+
+        date = re.search(
+        rf"{keyword}.*?(\d{{4}}[\s年/-]*\d{{1,2}}[\s月/-]*\d{{1,2}}日?)",
         text
     )
 
-    if date:
-        data["請求日"] = date.group()
+        if date:
+            data["請求日"] = (
+                date.group(1)
+                .replace(" ", "")
+            )
+            break
 
 
     # ------------------------
     # 合計金額抽出
     # ------------------------
 
-    total_amount = re.search(
-        r"(合\s*計|総\s*額|請求\s*金額|合計金額).*?([0-9０-９,，.．]+)",
-        text
-    )
+    for keyword in patterns["合計金額"]:
 
-    if total_amount:
+        total_amount = re.search(
+            rf"{keyword}.*?([0-9０-９,，.．]+)",
+            text
+        )
 
-        amount = total_amount.group(2)
+        if total_amount:
 
-        data["合計金額"] = normalize_amount(amount)
+            amount = total_amount.group(1)
+
+            data["合計金額"] = normalize_amount(amount)
+
+            break
 
 
     # ------------------------
