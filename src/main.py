@@ -2,12 +2,12 @@ import os
 
 from PIL import Image
 
+from cleaner import clean_text
+from excel import save_to_excel
+from extractor import extract_invoice_data
 from loader import load_file
 from ocr import extract_text
-from excel import save_to_excel
 from preprocess import preprocess_image
-from cleaner import clean_text
-from extractor import extract_invoice_data
 from validator import check_total_amount
 
 
@@ -38,6 +38,7 @@ def main():
     Excel出力
     """
 
+    # 請求書画像フォルダ
     folder_path = "sample_data/invoices"
 
     results = []
@@ -56,7 +57,7 @@ def main():
             file
         )
 
-        # ファイル読み込み
+        # 請求書画像ファイルを読み込み
         path = load_file(file_path)
 
 
@@ -69,35 +70,23 @@ def main():
 
 
         # デバッグ用画像保存
-        processed_image.save("debug.png")
+        # processed_image.save("debug.png")
 
 
-        # OCR実行
+        # OCRで画像から文字情報を取得
         text = extract_text(processed_image)
-
-        print("===== OCR結果 =====")
-        print(text)
-
 
         # OCR文字補正
         text = clean_text(text)
 
-        print("===== OCR補正後 =====")
-        print(text)
-
-
         # 請求書データ抽出
         data = extract_invoice_data(text)
-
-        print("===== 抽出結果 =====")
-        print(data)
-
-
+    
         # 金額検証
         data = check_total_amount(data)
 
-        print("===== 検証結果 =====")
-        print(data)
+        # 抽出結果確認
+        print(data) 
 
 
         # 結果保存用リストへ追加
@@ -108,13 +97,12 @@ def main():
     # Excel出力
     output_path = "output/result.xlsx"
 
-
     save_to_excel(
         results,
         output_path
     )
 
-
+    print(f"Excel保存完了: {output_path}")
 
 if __name__ == "__main__":
     main()

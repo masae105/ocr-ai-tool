@@ -18,8 +18,9 @@ def save_to_excel(results, output_path):
             "会社名": data.get("会社名"),
             "請求番号": data.get("請求番号"),
             "請求日": data.get("請求日"),
-            "合計金額": int(data.get("合計金額")),
+            "合計金額": int(data.get("合計金額", 0)),
             "金額チェック": data.get("金額チェック")
+            
         })
 
         # 明細情報
@@ -28,7 +29,7 @@ def save_to_excel(results, output_path):
             detail_rows.append({
                 "請求番号": data.get("請求番号"),
                 "商品名": item.get("商品名"),
-                "金額": int(item.get("金額"))
+                "金額": int(item.get("金額", 0))
             })
 
 

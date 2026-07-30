@@ -51,7 +51,7 @@ Excel出力
 * [x] OCRによる文字抽出
 * [x] Excel自動出力
 
-### Lv2：業務データ対応  開発中
+### Lv2：業務データ対応  開発中（一部機能完成）
 
 * [x] 請求書読み取り
 * [x] 項目別データ整理
@@ -59,6 +59,7 @@ Excel出力
 * [x] OCR文字補正
 * [x] 金額チェック機能
 * [x] 複数請求書処理
+* [x] OCR金額異常候補検出
 
 * [ ] 領収書読み取り
 
@@ -89,20 +90,34 @@ Excel出力
 ocr-ai-tool
 │
 ├── src
-│   └── Pythonコード
+│   ├── main.py
+│   ├── loader.py
+│   ├── ocr.py
+│   ├── preprocess.py
+│   ├── cleaner.py
+│   ├── extractor.py
+│   ├── validator.py
+│   ├── amount_cleaner.py
+│   └── excel.py
+│
+├── data
+│   ├── invoice_patterns.json
+│   
 │
 ├── sample_data
 │   ├── pdf
-│   └── images
+│   ├── images
+│   └── invoices
 │
 ├── output
-│   └── 出力ファイル
+│   └── result.xlsx
 │
 ├── docs
 │   └── images
 │
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── LICENSE
 ```
 
 ---
@@ -127,12 +142,14 @@ ocr-ai-tool
 - OCR文字補正
   - OCR誤認識修正
   - 全角数字の補正
-  - 商品名補正
   - 余分な空白削除
 
-- データ検証
+- 金額処理
+  - 金額データ正規化
   - 明細金額合計と請求金額を比較
   - 金額チェック結果を保存
+  - OCR金額異常候補を検出
+
 
 - 複数請求書対応
   - 指定フォルダ内の請求書画像を一括処理
@@ -141,7 +158,6 @@ ocr-ai-tool
 - Excel出力改善
   - 請求書情報シート
   - 明細シート
-  - Excel出力改善
   - 請求書形式への変換
   - 金額チェック
 
