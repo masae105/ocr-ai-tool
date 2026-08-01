@@ -12,6 +12,7 @@ from ocr import extract_text
 from preprocess import preprocess_image
 from validator import check_total_amount
 from layout_detector import detect_layout
+from feature_extractor import extract_features
 
 
 
@@ -82,8 +83,18 @@ def main():
         # OCR文字補正
         text = clean_text(text)
 
-         # レイアウト判定（Lv3 Step1）
-        layout = detect_layout(text)
+        # Lv3特徴抽出
+        features = extract_features(text)
+
+        print("===== Features =====")
+        print(features)
+
+
+        # レイアウト判定
+        layout = detect_layout(
+            text,
+            features
+        )
 
         print("===== レイアウト判定 =====")
         print(layout)

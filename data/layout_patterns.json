@@ -1,0 +1,36 @@
+{
+    "A": {
+        "keywords": [
+            "株式会社ABC",
+            "請求番号"
+        ],
+        "features": {
+            "has_invoice_number": true,
+            "has_tax": false
+        }
+    },
+
+    "B": {
+        "keywords": [
+            "株式会社XYZ",
+            "請求No"
+        ],
+        "features": {
+            "has_invoice_number": true,
+            "has_tax": true
+        }
+    },
+
+    "C": {
+        "keywords": [
+            "サンプル商事",
+            "USBメモリ",
+            "Webカメラ"
+        ],
+        "features": {
+            "has_invoice_number": false,
+            "has_tax": true,
+            "has_detail": true
+        }
+    }
+}
