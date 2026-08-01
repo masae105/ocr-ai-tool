@@ -4,11 +4,14 @@ from PIL import Image
 
 from cleaner import clean_text
 from excel import save_to_excel
-from extractor import extract_invoice_data
+from extractor_a import extract_a
+from extractor_b import extract_b
+from extractor_c import extract_c
 from loader import load_file
 from ocr import extract_text
 from preprocess import preprocess_image
 from validator import check_total_amount
+from layout_detector import detect_layout
 
 
 
@@ -79,8 +82,22 @@ def main():
         # OCR文字補正
         text = clean_text(text)
 
+         # レイアウト判定（Lv3 Step1）
+        layout = detect_layout(text)
+
+        print("===== レイアウト判定 =====")
+        print(layout)
+
+
         # 請求書データ抽出
-        data = extract_invoice_data(text)
+        if layout == "A":
+            data = extract_a(text)
+
+        elif layout == "B":
+            data = extract_b(text)
+
+        elif layout == "C":
+            data = extract_c(text)
     
         # 金額検証
         data = check_total_amount(data)
