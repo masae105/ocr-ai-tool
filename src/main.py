@@ -8,12 +8,15 @@ from extractor_a import extract_a
 from extractor_b import extract_b
 from extractor_c import extract_c
 from loader import load_file
-from ocr import extract_text
+from ocr import extract_text, extract_data
 from preprocess import preprocess_image
 from validator import check_total_amount
+
 from layout_detector import detect_layout
 from feature_extractor import extract_features
-
+from layout_analyzer import group_by_line, detect_regions
+from region_detector import split_regions
+from region_fusion import merge_regions
 
 
 IMAGE_EXTENSIONS = (
@@ -23,33 +26,102 @@ IMAGE_EXTENSIONS = (
 )
 
 
-
-def main():
+def process_invoice(file_path):
     """
-    請求書OCR処理のメイン処理
+    1枚の請求書画像を解析する処理
 
-    処理内容:
+    流れ:
     画像読み込み
     ↓
     OCR
     ↓
     文字補正
     ↓
+    レイアウト解析
+    ↓
     データ抽出
     ↓
     金額検証
-    ↓
-    Excel出力
     """
 
-    # 請求書画像フォルダ
+    path = load_file(file_path)
+
+    image = Image.open(path)
+
+    # 画像前処理
+    processed_image = preprocess_image(image)
+
+
+    # OCR取得
+    text = extract_text(processed_image)
+
+
+    # 座標付きOCR
+    ocr_data = extract_data(processed_image)
+
+    lines = group_by_line(
+        ocr_data
+    )
+
+
+    # Lv3 レイアウト領域解析
+    coordinate_regions = detect_regions(lines)
+
+    keyword_regions = split_regions(lines)
+
+    regions = merge_regions(
+        coordinate_regions,
+        keyword_regions
+    )
+
+
+    # OCR文字補正
+    text = clean_text(text)
+
+
+    # 特徴量取得
+    features = extract_features(text)
+
+
+    # レイアウト判定
+    layout = detect_layout(
+        text,
+        features
+    )
+
+
+    # レイアウト別抽出
+    if layout == "A":
+        data = extract_a(text)
+
+    elif layout == "B":
+        data = extract_b(text)
+
+    elif layout == "C":
+        data = extract_c(text)
+
+    else:
+        data = {}
+
+
+    # 金額チェック
+    data = check_total_amount(data)
+
+
+    return data
+
+
+
+def main():
+
     folder_path = "sample_data/invoices"
 
     results = []
 
 
     files = [
-        f for f in os.listdir(folder_path)
+        f
+        for f in os.listdir(folder_path)
         if f.lower().endswith(IMAGE_EXTENSIONS)
     ]
 
@@ -61,76 +133,41 @@ def main():
             file
         )
 
-        # 請求書画像ファイルを読み込み
-        path = load_file(file_path)
+
+        print("解析中:", file)
 
 
-        # 画像読み込み
-        image = Image.open(path)
-
-
-        # 画像前処理
-        processed_image = preprocess_image(image)
-
-
-        # デバッグ用画像保存
-        # processed_image.save("debug.png")
-
-
-        # OCRで画像から文字情報を取得
-        text = extract_text(processed_image)
-
-        # OCR文字補正
-        text = clean_text(text)
-
-        # Lv3特徴抽出
-        features = extract_features(text)
-
-        print("===== Features =====")
-        print(features)
-
-
-        # レイアウト判定
-        layout = detect_layout(
-            text,
-            features
+        data = process_invoice(
+            file_path
         )
 
-        print("===== レイアウト判定 =====")
-        print(layout)
 
-
-        # 請求書データ抽出
-        if layout == "A":
-            data = extract_a(text)
-
-        elif layout == "B":
-            data = extract_b(text)
-
-        elif layout == "C":
-            data = extract_c(text)
-    
-        # 金額検証
-        data = check_total_amount(data)
-
-        # 抽出結果確認
-        print(data) 
-
-
-        # 結果保存用リストへ追加
         results.append(data)
 
 
+        print(
+            f"完了: {file}"
+        )
+
 
     # Excel出力
+
     output_path = "output/result.xlsx"
+
 
     save_to_excel(
         results,
         output_path
     )
 
-    print(f"Excel保存完了: {output_path}")
+
+    print()
+    print("====================")
+    print("OCR処理完了")
+    print(f"Excel: {output_path}")
+    print("====================")
+
+
 
 if __name__ == "__main__":
     main()

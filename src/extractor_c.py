@@ -14,9 +14,12 @@ def load_invoice_patterns():
         "invoice_patterns.json"
     )
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(
+        path,
+        "r",
+        encoding="utf-8"
+    ) as f:
         return json.load(f)
-
 
 
 def extract_c(text):
@@ -55,6 +58,7 @@ def extract_c(text):
             .replace("　", "")
         )
 
+
     # ------------------------
     # 請求日抽出
     # ------------------------
@@ -73,6 +77,8 @@ def extract_c(text):
             )
             break
 
+
+
     # ------------------------
     # 合計金額抽出
     # ------------------------
@@ -86,12 +92,14 @@ def extract_c(text):
 
         if total_amount:
 
-            print("取得:", total_amount.group(1))
             amount = total_amount.group(1)
 
-            data["合計金額"] = clean_amount(amount)
+            data["合計金額"] = clean_amount(
+                amount
+            )
 
             break
+
 
 
     # ------------------------
@@ -117,6 +125,7 @@ def extract_c(text):
             break
 
 
+
     # ------------------------
     # 商品明細抽出
     # ------------------------
@@ -125,22 +134,48 @@ def extract_c(text):
 
     lines = text.split("\n")
 
+
     for line in lines:
 
         if "合計" in line:
             continue
 
+
         # OCR誤認識補正
-        line = line.replace("S.", "5.")
-        line = line.replace("「", "")
-        line = line.replace("]", "")
-        line = line.replace("ぎ", "")
-        line = line.replace("、", ",")
-        line = line.replace("|", "")
+
+        line = line.replace(
+            "S.",
+            "5."
+        )
+
+        line = line.replace(
+            "「",
+            ""
+        )
+
+        line = line.replace(
+            "]",
+            ""
+        )
+
+        line = line.replace(
+            "ぎ",
+            ""
+        )
+
+        line = line.replace(
+            "、",
+            ","
+        )
+
+        line = line.replace(
+            "|",
+            ""
+        )
+
 
         # ------------------------
-        # 新形式
-        # 商品名 数量 単価 金額
+        # 商品名 数量 単価 金額形式
         # ------------------------
 
         detail = re.search(
@@ -150,7 +185,7 @@ def extract_c(text):
 
 
         if detail:
-            print("取得明細:", line)
+
             item_name = detail.group(1).strip()
 
 
@@ -174,32 +209,37 @@ def extract_c(text):
                     }
                 )
 
-                continue    
+                continue
 
-    # ------------------------
-    # 商品名 金額形式
-    # ------------------------
 
-    item = re.search(
-        r"(.+?)\s+([0-9０-９,.]+)",
-        line
-    )
 
-    if item:
+        # ------------------------
+        # 商品名 金額形式
+        # ------------------------
 
-        item_name = item.group(1).strip()
-
-        amount = clean_amount(
-            item.group(2)
+        item = re.search(
+            r"(.+?)\s+([0-9０-９,.]+)",
+            line
         )
 
-        if amount:
 
-            data["明細"].append(
-                {
-                    "商品名": item_name,
-                    "金額": amount
-                }
+        if item:
+
+            item_name = item.group(1).strip()
+
+            amount = clean_amount(
+                item.group(2)
             )
+
+
+            if amount:
+
+                data["明細"].append(
+                    {
+                        "商品名": item_name,
+                        "金額": amount
+                    }
+                )
+
 
     return data

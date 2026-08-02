@@ -10,8 +10,4 @@ def load_file(file_path):
             f"{file_path} が見つかりません"
         )
 
-    print("読み込み成功")
-    print("ファイル名:", path.name)
-    print("種類:", path.suffix)
-
     return path

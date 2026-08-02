@@ -1,36 +1,41 @@
 {
     "A": {
-        "keywords": [
-            "株式会社ABC",
-            "請求番号"
-        ],
+        "keywords": {
+            "株式会社ABC": 3,
+            "請求番号": 2,
+            "INV": 1
+        },
         "features": {
-            "has_invoice_number": true,
-            "has_tax": false
+            "has_invoice_number": 2,
+            "has_tax": 0,
+            "has_detail": 1
         }
     },
 
     "B": {
-        "keywords": [
-            "株式会社XYZ",
-            "請求No"
-        ],
+        "keywords": {
+            "株式会社XYZ": 3,
+            "請求No": 2,
+            "Invoice": 1
+        },
         "features": {
-            "has_invoice_number": true,
-            "has_tax": true
+            "has_invoice_number": 2,
+            "has_tax": 2,
+            "has_detail": 1
         }
     },
 
     "C": {
-        "keywords": [
-            "サンプル商事",
-            "USBメモリ",
-            "Webカメラ"
-        ],
+        "keywords": {
+            "サンプル商事": 3,
+            "USBメモリ": 2,
+            "Webカメラ": 2,
+            "SSD": 1
+        },
         "features": {
-            "has_invoice_number": false,
-            "has_tax": true,
-            "has_detail": true
+            "has_invoice_number": 0,
+            "has_tax": 2,
+            "has_detail": 3
         }
     }
 }
