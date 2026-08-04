@@ -15,6 +15,7 @@ def save_to_excel(results, output_path):
 
         # 請求書情報
         invoice_rows.append({
+            "書類タイプ": data.get("書類タイプ"),
             "会社名": data.get("会社名"),
             "請求番号": data.get("請求番号"),
             "請求日": data.get("請求日"),
@@ -27,7 +28,6 @@ def save_to_excel(results, output_path):
         for item in data.get("明細", []):
 
             detail_rows.append({
-                "請求番号": data.get("請求番号"),
                 "商品名": item.get("商品名"),
                 "金額": int(item.get("金額", 0))
             })
@@ -59,7 +59,7 @@ def save_to_excel(results, output_path):
 
         invoice_ws.insert_rows(1)
 
-        invoice_ws.merge_cells("A1:E1")
+        invoice_ws.merge_cells("A1:F1")
 
         invoice_ws["A1"] = "請求書データ一覧"
 
@@ -165,10 +165,11 @@ def save_to_excel(results, output_path):
         # 請求書情報シート幅固定
 
         invoice_ws.column_dimensions["A"].width = 18
-        invoice_ws.column_dimensions["B"].width = 15
+        invoice_ws.column_dimensions["B"].width = 18
         invoice_ws.column_dimensions["C"].width = 15
         invoice_ws.column_dimensions["D"].width = 15
-        invoice_ws.column_dimensions["E"].width = 18
+        invoice_ws.column_dimensions["E"].width = 15
+        invoice_ws.column_dimensions["F"].width = 18
 
 
 
@@ -177,7 +178,7 @@ def save_to_excel(results, output_path):
         # =========================
 
         # 合計金額
-        for cell in invoice_ws["D"][2:]:
+        for cell in invoice_ws["E"][2:]:
 
             cell.number_format = "#,##0"
             cell.alignment = Alignment(
@@ -196,14 +197,14 @@ def save_to_excel(results, output_path):
 
         # 請求番号・日付中央寄せ
 
-        for cell in invoice_ws["B"][2:]:
+        for cell in invoice_ws["C"][2:]:
 
             cell.alignment = Alignment(
                 horizontal="center"
             )
 
 
-        for cell in invoice_ws["C"][2:]:
+        for cell in invoice_ws["D"][2:]:
 
             cell.alignment = Alignment(
                 horizontal="center"
@@ -226,7 +227,7 @@ def save_to_excel(results, output_path):
             invoice_ws.max_row + 1
         ):
 
-            cell = invoice_ws[f"E{row}"]
+            cell = invoice_ws[f"F{row}"]
 
 
             if cell.value == "OK":

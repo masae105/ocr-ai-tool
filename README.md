@@ -33,19 +33,15 @@ OCR
  ↓
 OCR文字補正
  ↓
-用途別辞書補正
- ├ 一般補正
- ├ 請求書補正
- ├ 商品名補正
- └ 金額補正
+特徴量抽出
  ↓
-請求書データ抽出
+レイアウト判定(A/B/C)
+ ↓
+形式別データ抽出
  ↓
 金額検証
  ↓
 Excel出力
- ├ 請求書情報
- └ 明細
 
 
 ## 🚀 開発ロードマップ
@@ -69,7 +65,7 @@ Excel出力
 * [x] 複数請求書処理
 * [x] OCR金額異常候補検出
 
-### Lv3：レイアウト解析・自動抽出機能（完成）
+### Lv3：レイアウト解析・GUI対応（完成）
 
 * [x] レイアウト判定基盤作成
 * [x] OCR結果から特徴量抽出
@@ -78,7 +74,9 @@ Excel出力
 * [x] OCR座標情報を利用した領域分類
 * [x] A/B/C形式ごとの抽出処理
 * [x] 複数形式の請求書を自動処理
-* [x] 抽出データのExcel出力
+* [x] StreamlitによるGUI操作
+* [x] 複数ファイル一括解析
+* [x] Excelダウンロード機能
 
 ### Lv4：AIによる高度化
 
@@ -112,9 +110,12 @@ Excel出力
 
 請求書情報
 
-|会社名|請求日|合計金額|金額チェック|
-|-|-|-|-|
-|株式会社ABC|2026年7月23日|55000|OK|
+|書類タイプ|会社名|請求番号|請求日|合計金額|金額チェック|
+|-|-|-|-|-|-|
+|請求書（Layout A）|株式会社ABC|-|2026年7月23日|55000|OK|
+|請求書（Layout B）|株式会社XYZ|-|2026年7月28日|36500|OK|
+|請求書（Layout C）|人サンプル商事株式会社|-|2026年7月30日|22500|NG|
+|請求書（Layout C）|2サンプル商事株式会社|-|2026年7月30日|22500|NG|
 
 明細
 
@@ -122,7 +123,16 @@ Excel出力
 |-|-|
 |商品A|50000|
 |HDMIケーブル|5000|
+
 ---
+
+## ▶️ 実行方法
+
+### CLI実行
+python src/main.py
+
+GUI実行（Streamlit）
+streamlit run app.py
 
 ## 🛠 使用技術
 
@@ -133,9 +143,11 @@ Excel出力
 | pandas       | データ処理        |
 | openpyxl     | Excel操作      |
 | Git / GitHub | ソースコード管理     |
-| pytesseract | OCRエンジン連携 |
-| Pillow | 画像処理 |
-| JSON | OCR補正辞書・設定管理 |
+| pytesseract  | OCRエンジン連携    |
+| Pillow       | 画像処理         |
+| JSON         | OCR補正辞書・設定管理 |
+| Streamlit    | GUI画面作成      |
+
 ---
 
 ## 📂 ディレクトリ構成
@@ -143,53 +155,55 @@ Excel出力
 ```text
 ocr-ai-tool
 │
-├── src
-│   ├── main.py
-│   │
-│   ├── loader.py
-│   ├── ocr.py
-│   ├── preprocess.py
-│   ├── cleaner.py
-│   │
-│   ├── extractor_a.py
-│   ├── extractor_b.py
-│   ├── extractor_c.py
-│   │
-│   ├── validator.py
-│   ├── amount_cleaner.py
-│   ├── excel.py
-│   │
-│   ├── layout_detector.py
-│   ├── feature_extractor.py
-│   ├── layout_analyzer.py
-│   ├── region_detector.py
-│   └── region_fusion.py
-│
-│   └── ocr_dict
-│       ├── common.json
-│       ├── invoice.json
-│       ├── product.json
-│       ├── amount.json
-│       └── ocr_corrections.json
+├── app.py
+├── README.md
+├── requirements.txt
+├── LICENSE
 │
 ├── data
 │   ├── invoice_patterns.json
 │   └── layout_patterns.json
 │
-├── sample_data
-│   ├── pdf
-│   ├── images
-│   └── invoices
-│
-├── output
-│   └── result.xlsx
-│
 ├── docs
 │   └── images
+│       └── .gitkeep
 │
-├── README.md
-├── requirements.txt
-└── LICENSE
+├── output
+│   └── .gitkeep
+│
+├── sample_data
+│   ├── images
+│   ├── invoices
+│   └── pdf
+│
+└── src
+    ├── main.py
+    ├── loader.py
+    ├── ocr.py
+    ├── preprocess.py
+    ├── cleaner.py
+    ├── detail_cleaner.py
+    │
+    ├── extractor_a.py
+    ├── extractor_b.py
+    ├── extractor_c.py
+    │
+    ├── validator.py
+    ├── amount_cleaner.py
+    ├── excel.py
+    │
+    ├── layout_detector.py
+    ├── feature_extractor.py
+    ├── layout_analyzer.py
+    ├── region_detector.py
+    ├── region_fusion.py
+    │
+    └── ocr_dict
+        ├── common.json
+        ├── invoice.json
+        ├── product.json
+        ├── amount.json
+        └── ocr_corrections.json
 ```
 
 ---
@@ -241,7 +255,7 @@ ocr-ai-tool
   - 請求書形式への変換
   - 金額チェック
 
-  ### Lv3：レイアウト解析・自動抽出機能
+### Lv3：レイアウト解析・GUI対応（完成）
 
 複数形式の請求書に対応するため、
 OCR結果の特徴量と座標情報を利用した

@@ -2,6 +2,8 @@ import re
 import json
 import os
 from amount_cleaner import clean_amount
+from detail_cleaner import clean_details
+
 
 def load_invoice_patterns():
     """
@@ -276,4 +278,8 @@ def extract_a(text):
                 }
             )
 
-    return data        
+
+    # 明細ノイズ除去
+    data["明細"] = clean_details(data["明細"])
+
+    return data

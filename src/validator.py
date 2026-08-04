@@ -91,7 +91,7 @@ def check_total_amount(data):
         data.get("消費税", 0)
     )
 
-
+  
     # 金額比較
     if (
         detail_total_amount == invoice_total_amount

@@ -3,6 +3,7 @@ import json
 import os
 
 from amount_cleaner import clean_amount
+from detail_cleaner import clean_details
 
 
 def load_invoice_patterns():
@@ -22,6 +23,7 @@ def load_invoice_patterns():
         return json.load(f)
 
 
+
 def extract_c(text):
 
     data = {}
@@ -37,6 +39,7 @@ def extract_c(text):
         r"(?:株式会社\s*[^\n〒()（）]{1,20}|[^\n〒()（）]{1,20}株式会社)",
         text
     )
+
 
     companies = [
         c.strip()
@@ -59,6 +62,7 @@ def extract_c(text):
         )
 
 
+
     # ------------------------
     # 請求日抽出
     # ------------------------
@@ -70,11 +74,14 @@ def extract_c(text):
             text
         )
 
+
         if date:
+
             data["請求日"] = (
                 date.group(1)
                 .replace(" ", "")
             )
+
             break
 
 
@@ -90,12 +97,11 @@ def extract_c(text):
             text
         )
 
+
         if total_amount:
 
-            amount = total_amount.group(1)
-
             data["合計金額"] = clean_amount(
-                amount
+                total_amount.group(1)
             )
 
             break
@@ -111,10 +117,12 @@ def extract_c(text):
         if "消費税" not in line:
             continue
 
+
         amounts = re.findall(
             r"[0-9０-９,，.．]+",
             line
         )
+
 
         if amounts:
 
@@ -132,50 +140,31 @@ def extract_c(text):
 
     data["明細"] = []
 
+
     lines = text.split("\n")
 
 
     for line in lines:
 
+
         if "合計" in line:
             continue
 
 
-        # OCR誤認識補正
 
-        line = line.replace(
-            "S.",
-            "5."
-        )
+        # OCR補正
 
-        line = line.replace(
-            "「",
-            ""
-        )
+        line = line.replace("S.", "5.")
+        line = line.replace("「", "")
+        line = line.replace("]", "")
+        line = line.replace("ぎ", "")
+        line = line.replace("、", ",")
+        line = line.replace("|", "")
 
-        line = line.replace(
-            "]",
-            ""
-        )
-
-        line = line.replace(
-            "ぎ",
-            ""
-        )
-
-        line = line.replace(
-            "、",
-            ","
-        )
-
-        line = line.replace(
-            "|",
-            ""
-        )
 
 
         # ------------------------
-        # 商品名 数量 単価 金額形式
+        # 商品名 数量 単価 金額
         # ------------------------
 
         detail = re.search(
@@ -186,11 +175,12 @@ def extract_c(text):
 
         if detail:
 
+
             item_name = detail.group(1).strip()
 
 
             amounts = re.findall(
-                r"[\¥\\]?[0-9０-９,.．]+",
+                r"[0-9０-９,.．]+",
                 line
             )
 
@@ -202,30 +192,35 @@ def extract_c(text):
                 )
 
 
-                data["明細"].append(
-                    {
-                        "商品名": item_name,
-                        "金額": amount
-                    }
-                )
+                if amount:
 
-                continue
+                    data["明細"].append(
+                        {
+                            "商品名": item_name,
+                            "金額": amount
+                        }
+                    )
+
+
+                    continue
 
 
 
         # ------------------------
-        # 商品名 金額形式
+        # 商品名 金額
         # ------------------------
 
         item = re.search(
-            r"(.+?)\s+([0-9０-９,.]+)",
+            r"(.+?)\s+([0-9０-９,.]+)$",
             line
         )
 
 
         if item:
 
+
             item_name = item.group(1).strip()
+
 
             amount = clean_amount(
                 item.group(2)
@@ -234,12 +229,23 @@ def extract_c(text):
 
             if amount:
 
+
                 data["明細"].append(
                     {
                         "商品名": item_name,
                         "金額": amount
                     }
                 )
+
+
+
+    # ------------------------
+    # 明細ノイズ除去
+    # ------------------------
+
+    data["明細"] = clean_details(
+        data["明細"]
+    )
 
 
     return data

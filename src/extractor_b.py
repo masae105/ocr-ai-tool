@@ -3,6 +3,7 @@ import json
 import os
 
 from amount_cleaner import clean_amount
+from detail_cleaner import clean_details
 
 
 def load_invoice_patterns():
@@ -14,7 +15,11 @@ def load_invoice_patterns():
         "invoice_patterns.json"
     )
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(
+        path,
+        "r",
+        encoding="utf-8"
+    ) as f:
         return json.load(f)
 
 
@@ -25,16 +30,23 @@ def extract_b(text):
 
     patterns = load_invoice_patterns()
 
+
+    # ------------------------
+    # 会社名抽出
+    # ------------------------
+
     companies = re.findall(
         r"(?:株式会社\s*[^\n〒()（）]{1,20}|[^\n〒()（）]{1,20}株式会社)",
         text
     )
+
 
     companies = [
         c.strip()
         for c in companies
         if "御中" not in c
     ]
+
 
     if companies:
 
@@ -47,7 +59,12 @@ def extract_b(text):
             company_name
             .replace(" ", "")
             .replace("　", "")
-        )    
+        )
+
+
+    # ------------------------
+    # 請求日抽出
+    # ------------------------
 
     for keyword in patterns["請求日"]:
 
@@ -57,11 +74,15 @@ def extract_b(text):
         )
 
         if date:
+
             data["請求日"] = (
                 date.group(1)
                 .replace(" ", "")
-        )
-            break     
+            )
+
+            break
+
+
 
     # ------------------------
     # 合計金額抽出
@@ -83,6 +104,7 @@ def extract_b(text):
             break
 
 
+
     # ------------------------
     # 消費税抽出
     # ------------------------
@@ -92,10 +114,12 @@ def extract_b(text):
         if "消費税" not in line:
             continue
 
+
         amounts = re.findall(
             r"[0-9０-９,，.．]+",
             line
         )
+
 
         if amounts:
 
@@ -105,20 +129,27 @@ def extract_b(text):
 
             break
 
+
+
     # ------------------------
     # 商品明細抽出
     # ------------------------
 
     data["明細"] = []
 
+
     lines = text.split("\n")
 
+
     for line in lines:
+
 
         if "合計" in line:
             continue
 
+
         # OCR誤認識補正
+
         line = line.replace("S.", "5.")
         line = line.replace("「", "")
         line = line.replace("]", "")
@@ -127,9 +158,10 @@ def extract_b(text):
         line = line.replace("|", "")
 
 
+
         # ------------------------
         # 新形式
-        # 1 商品名 数量 単価 金額
+        # 商品名 数量 単価 金額
         # ------------------------
 
         detail = re.search(
@@ -141,6 +173,7 @@ def extract_b(text):
         if detail:
 
             item_name = detail.group(1).strip()
+
 
             amounts = re.findall(
                 r"[\¥\\]?[0-9０-９,.．]+",
@@ -162,9 +195,18 @@ def extract_b(text):
                     }
                 )
 
-                continue
-    
 
-            
+                continue
+
+
+
+    # ------------------------
+    # 明細ノイズ除去
+    # ------------------------
+
+    data["明細"] = clean_details(
+        data["明細"]
+    )
+
 
     return data

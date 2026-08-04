@@ -89,7 +89,6 @@ def process_invoice(file_path):
         features
     )
 
-
     # レイアウト別抽出
     if layout == "A":
         data = extract_a(text)
@@ -106,6 +105,9 @@ def process_invoice(file_path):
 
     # 金額チェック
     data = check_total_amount(data)
+
+    # 書類タイプ追加
+    data["書類タイプ"] = f"請求書（Layout {layout}）"
 
 
     return data
@@ -140,8 +142,7 @@ def main():
         data = process_invoice(
             file_path
         )
-
-
+        
         results.append(data)
 
 
