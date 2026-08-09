@@ -17,6 +17,8 @@ from feature_extractor import extract_features
 from layout_analyzer import group_by_line, detect_regions
 from region_detector import split_regions
 from region_fusion import merge_regions
+from ai_service import AIService
+
 
 
 IMAGE_EXTENSIONS = (
@@ -102,17 +104,23 @@ def process_invoice(file_path):
     else:
         data = {}
 
-
     # 金額チェック
     data = check_total_amount(data)
 
     # 書類タイプ追加
     data["書類タイプ"] = f"請求書（Layout {layout}）"
 
+    # Phase2 AI解析
+    ai_service = AIService()
+    ai_result = ai_service.analyze(data)
+
+    # AI結果を追加
+    data["ai_result"] = ai_result
 
     return data
 
 
+  
 
 def main():
 
