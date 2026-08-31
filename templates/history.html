@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>解析履歴 - OCR AI Tool</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="logo">OCR AI Tool</div>
+
+        <div>
+            {{ session["username"] }} さん
+            |
+            <a href="/logout">ログアウト</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>解析履歴</h1>
+        <p>過去に解析した請求書の履歴を確認できます。</p>
+    </div>
+
+    {% if records %}
+
+    <div class="result-card">
+
+        <table>
+
+            <tr>
+                <th>日時</th>
+                <th>ファイル名</th>
+                <th>会社名</th>
+                <th>請求日</th>
+                <th>合計金額</th>
+                <th>金額チェック</th>
+                <th>AI判定</th>
+                <th>詳細</th>
+            </tr>
+
+            {% for record in records %}
+
+            <tr>
+
+                <td>
+                    {{ record["created_at"] }}
+                </td>
+
+                <td>
+                    {{ record["filename"] }}
+                </td>
+
+                <td>
+                    {{ record["company_name"] }}
+                </td>
+
+                <td>
+                    {{ record["invoice_date"] }}
+                </td>
+
+                <td>
+                    {{ "{:,}".format(
+                        record["total_amount"] or 0
+                    ) }} 円
+                </td>
+
+                <td>
+                    {% if record["amount_check"] == "OK" %}
+                        <span class="check-ok">OK</span>
+                    {% else %}
+                        <span class="check-ng">NG</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ record["ai_status"] }}
+                </td>
+
+                <td>
+                    <a href="/history/{{ record['id'] }}">
+                        詳細
+                    </a>
+
+                    <form
+                        action="/history/{{ record['id'] }}/delete"
+                        method="POST"
+                        style="display:inline;"
+                        onsubmit="return confirm('この解析履歴を削除しますか？');"
+                    >
+                        <button type="submit">
+                            削除
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <div class="message">
+            解析履歴はありません。
+        </div>
+
+    {% endif %}
+
+    <div class="download-section">
+
+        <a href="/" class="download-button">
+            OCR画面へ戻る
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+

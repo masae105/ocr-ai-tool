@@ -217,3 +217,8 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 output/
+
+# Local development
+database.db
+.vscode/
+temp/

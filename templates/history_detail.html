@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>解析履歴詳細 - OCR AI Tool</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="logo">OCR AI Tool</div>
+
+        <div>
+            {{ session["username"] }} さん
+            |
+            <a href="/logout">ログアウト</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>解析履歴詳細</h1>
+        <p>過去に解析した請求書の詳細情報を確認できます。</p>
+    </div>
+
+    <div class="result-card">
+
+        <div class="result-header">
+            <h3>{{ record["filename"] }}</h3>
+
+            <span class="document-type">
+                {{ record["document_type"] }}
+            </span>
+        </div>
+
+        <div class="info-grid">
+
+            <div class="info-item">
+                <span>会社名</span>
+                <strong>
+                    {{ record["company_name"] }}
+                </strong>
+            </div>
+
+            <div class="info-item">
+                <span>請求日</span>
+                <strong>
+                    {{ record["invoice_date"] }}
+                </strong>
+            </div>
+
+            <div class="info-item amount">
+                <span>合計金額</span>
+                <strong>
+                    {{ "{:,}".format(
+                        record["total_amount"] or 0
+                    ) }} 円
+                </strong>
+            </div>
+
+            <div class="info-item">
+                <span>金額チェック</span>
+
+                {% if record["amount_check"] == "OK" %}
+
+                    <strong class="check-ok">
+                        OK
+                    </strong>
+
+                {% else %}
+
+                    <strong class="check-ng">
+                        NG
+                    </strong>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="ai-result">
+
+            <div class="ai-header">
+
+                <h4>🤖 AI解析結果</h4>
+
+                <span class="ai-source">
+                    AI Analysis
+                </span>
+
+            </div>
+
+            <div class="details">
+                <h4>📋 明細</h4>
+
+                {% if details %}
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>商品名</th>
+                            <th>金額</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for detail in details %}
+                        <tr>
+                            <td>
+                                {{ detail["product_name"] }}
+                            </td>
+
+                            <td>
+                                {{ "{:,}".format(
+                                    detail["amount"] or 0
+                                ) }} 円
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% else %}
+
+                <p>明細はありません。</p>
+
+                {% endif %}
+            </div>
+
+            <div class="ai-status">
+
+                <div>
+                    <span>判定</span>
+
+                    <strong>
+                        {% if record["ai_status"] == "normal" %}
+                            正常
+                        {% elif record["ai_status"] == "warning" %}
+                            要確認
+                        {% else %}
+                            {{ record["ai_status"] }}
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>重要度</span>
+
+                    <strong>
+                        {% if record["ai_severity"] == "low" %}
+                            低
+                        {% elif record["ai_severity"] == "medium" %}
+                            中
+                        {% elif record["ai_severity"] == "high" %}
+                            高
+                        {% else %}
+                            {{ record["ai_severity"] }}
+                        {% endif %}
+                    </strong>
+                </div>
+
+            </div>
+            {% if record["ai_issues"] %}
+            <div class="ai-warning">
+                <strong>🔎 検出された問題</strong>
+                <p>{{ record["ai_issues"] }}</p>
+            </div>
+            {% endif %}
+
+            {% if record["ai_recommendation"] %}
+            <div class="ai-recommendation">
+                <strong>💡 AIからの推奨</strong>
+                <p>{{ record["ai_recommendation"] }}</p>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="record-meta">
+
+            <p>
+                <strong>解析日時：</strong>
+                {{ record["created_at"] }}
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="download-section">
+
+        <a href="/history" class="download-button">
+            解析履歴へ戻る
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

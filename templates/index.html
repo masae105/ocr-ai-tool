@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR AI Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <header class="header">
+        <div class="logo">OCR AI Tool</div>
+
+        <nav class="header-nav">
+            <a href="{{ url_for('history') }}">解析履歴</a>
+            <a href="{{ url_for('logout') }}">ログアウト</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>請求書・書類を<span>AIで自動解析</span></h1>
+        <p>OCRで書類を読み取り、金額チェックとAIによる内容確認を自動化します。</p>
+    </section>
+
+    <section class="upload-card">
+        <h2>📄 ファイルを解析</h2>
+        <p class="upload-description">PNG / JPG / JPEG / PDF に対応しています。</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label for="file" class="file-label">
+                <span class="upload-icon">＋</span>
+                <span>ファイルを選択</span>
+            </label>
+
+            <input type="file" id="file" name="files"
+                   accept=".png,.jpg,.jpeg,.pdf" multiple>
+
+            <p id="file-name">ファイルが選択されていません</p>
+
+            <button type="submit" class="analyze-button">解析開始</button>
+        </form>
+    </section>
+
+    {% if message %}
+        <div class="message {{ message_type }}">
+            {% if message_type == "error" %}
+                <span>⚠</span>
+            {% else %}
+                <span>✓</span>
+            {% endif %}
+            {{ message }}
+        </div>
+    {% endif %}
+
+    {% if results %}
+        <section class="results-section">
+
+            <div class="section-title">
+                <h2>解析結果</h2>
+                <span>{{ results|length }}件</span>
+            </div>
+
+            {% for data in results %}
+                <div class="result-card">
+
+                    <div class="result-header">
+                        <h3>解析結果 {{ loop.index }}</h3>
+                        <span class="document-type">
+                            {{ data.get("書類タイプ", "") }}
+                        </span>
+                    </div>
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <span>会社名</span>
+                            <strong>{{ data.get("会社名", "") }}</strong>
+                        </div>
+
+                        <div class="info-item">
+                            <span>請求日</span>
+                            <strong>{{ data.get("請求日", "") }}</strong>
+                        </div>
+
+                        <div class="info-item amount">
+                            <span>合計金額</span>
+                            <strong>
+                                {{ "{:,}".format(data.get("合計金額", 0)) }} 円
+                            </strong>
+                        </div>
+
+                        <div class="info-item">
+                            <span>金額チェック</span>
+
+                            {% if data.get("金額チェック") == "OK" %}
+                                <strong class="check-ok">✓ OK</strong>
+                            {% else %}
+                                <strong class="check-ng">⚠ NG</strong>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                    <div class="details">
+                        <h4>明細</h4>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th>金額</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for item in data.get("明細", []) %}
+                                    <tr>
+                                        <td>{{ item.get("商品名", "") }}</td>
+                                        <td>
+                                            {{ "{:,}".format(item.get("金額", 0)) }} 円
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if data.get("ai_result") %}
+                        <div class="ai-result">
+
+                            <div class="ai-header">
+                                <h4>🤖 AI解析</h4>
+                                <span class="ai-source">
+                                    {{ data["ai_result"].get("source", "") }}
+                                </span>
+                            </div>
+
+                            <div class="ai-status">
+
+                           
+                            <div class="ai-status">
+
+                                <div>
+                                    <span>判定</span>
+                                    <strong>
+                                        {% if data["ai_result"].get("status") == "normal" %}
+                                            正常
+                                        {% elif data["ai_result"].get("status") == "warning" %}
+                                            要確認
+                                        {% else %}
+                                            注意
+                                        {% endif %}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>重要度</span>
+                                    <strong>
+                                        {% if data["ai_result"].get("severity") == "low" %}
+                                            低
+                                        {% elif data["ai_result"].get("severity") == "medium" %}
+                                            中
+                                        {% elif data["ai_result"].get("severity") == "high" %}
+                                            高
+                                        {% else %}
+                                            {{ data["ai_result"].get("severity", "") }}
+                                        {% endif %}
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                            {% if data["ai_result"].get("issues") %}
+                                <div class="ai-warning">
+                                    <strong>⚠ 検出された問題</strong>
+
+                                    <ul>
+                                        {% for issue in data["ai_result"].get("issues", []) %}
+                                            <li>{{ issue }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% else %}
+                                <div class="ai-normal">
+                                    ✓ 特に問題は検出されませんでした
+                                </div>
+                            {% endif %}
+
+                            <div class="ai-recommendation">
+                                <strong>推奨：</strong>
+                                {{ data["ai_result"].get("recommendation", "") }}
+                            </div>
+
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+        </section>
+
+        <section class="download-section">
+            <a href="/download" class="download-button">
+                📊 Excelダウンロード
+            </a>
+        </section>
+    {% endif %}
+
+</div>
+
+<script>
+const fileInput = document.getElementById("file");
+const fileName = document.getElementById("file-name");
+
+fileInput.addEventListener("change", function() {
+    if (this.files.length === 0) {
+        fileName.textContent = "ファイルが選択されていません";
+    } else if (this.files.length === 1) {
+        fileName.textContent = this.files[0].name;
+    } else {
+        fileName.textContent = `${this.files.length}件のファイルを選択しました`;
+    }
+});
+</script>
+
+</body>
+</html>
