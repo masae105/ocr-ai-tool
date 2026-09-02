@@ -2,6 +2,7 @@ import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 DATABASE = "database.db"
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
@@ -68,6 +69,20 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # 管理者ユーザーが存在しない場合は作成
+    user = conn.execute(
+        "SELECT id FROM users WHERE username = ?",
+        (ADMIN_USERNAME,)
+    ).fetchone()
+
+    if user is None:
+        password_hash = generate_password_hash(ADMIN_PASSWORD)
+
+        conn.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (ADMIN_USERNAME, password_hash)
+        )
+
     conn.commit()
     conn.close()
 
@@ -85,6 +100,7 @@ def create_user(username, password):
     conn.commit()
     conn.close()
 
+
 def update_password(username, password):
     conn = get_db()
 
@@ -101,6 +117,7 @@ def update_password(username, password):
 
     conn.commit()
     conn.close()
+
 
 def save_invoice_record(
     user_id,
@@ -209,24 +226,4 @@ if __name__ == "__main__":
             record["created_at"]
         )
 
-    print("===== ユーザー =====")
-
-       # 管理者ユーザーが存在しない場合は作成
-    user = conn.execute(
-        "SELECT id FROM users WHERE username = ?",
-        (ADMIN_USERNAME,)
-    ).fetchone()
-
-    if user is None:
-        password_hash = generate_password_hash(ADMIN_PASSWORD)
-
-        conn.execute(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
-            (ADMIN_USERNAME, password_hash)
-        )
-
-    conn.commit()
     conn.close()
-
-
-
