@@ -4,6 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = "database.db"
 
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "1234")
+
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -208,17 +211,21 @@ if __name__ == "__main__":
 
     print("===== ユーザー =====")
 
-    users = conn.execute(
-        "SELECT * FROM users"
-    ).fetchall()
+       # 管理者ユーザーが存在しない場合は作成
+    user = conn.execute(
+        "SELECT id FROM users WHERE username = ?",
+        (ADMIN_USERNAME,)
+    ).fetchone()
 
-    for user in users:
-        print(
-            user["id"],
-            user["username"],
-            user["password"]
+    if user is None:
+        password_hash = generate_password_hash(ADMIN_PASSWORD)
+
+        conn.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (ADMIN_USERNAME, password_hash)
         )
 
+    conn.commit()
     conn.close()
 
 
