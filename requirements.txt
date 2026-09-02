@@ -3,3 +3,4 @@ openpyxl
 Pillow
 pytesseract
 pdf2image
+gunicorn
