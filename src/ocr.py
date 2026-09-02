@@ -1,13 +1,17 @@
+import os
 import pytesseract
+
 from pytesseract import Output
 
-
 # Tesseractの場所を指定
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-)
-
-
+if os.name == "nt":
+    # Windows
+    pytesseract.pytesseract.tesseract_cmd = (
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    )
+else:
+    # Linux（Renderなど）
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 def extract_text(image):
     """
@@ -20,8 +24,6 @@ def extract_text(image):
     )
 
     return text
-
-
 
 def extract_data(image):
     """
@@ -36,20 +38,14 @@ def extract_data(image):
         output_type=Output.DICT
     )
 
-
     results = []
-
-
     for i in range(len(data["text"])):
 
         text = data["text"][i].strip()
 
-
         # 空文字除外
         if text == "":
             continue
-
-
         results.append(
             {
                 "text": text,
@@ -60,6 +56,4 @@ def extract_data(image):
                 "confidence": data["conf"][i]
             }
         )
-
-
     return results
