@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Renderから指定されたポートで起動
-CMD gunicorn --bind 0.0.0.0:$PORT --timeout 180 app:app
+CMD gunicorn --bind 0.0.0.0:$PORT --timeout 300 app:app
