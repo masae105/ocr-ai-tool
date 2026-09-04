@@ -21,6 +21,7 @@ sys.path.append(
 from main import process_invoice
 from excel import save_to_excel
 from database import get_db, save_invoice_record, init_db
+from datetime import datetime, timezone, timedelta
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
@@ -83,6 +84,19 @@ def history():
 
     conn.close()
 
+    jst = timezone(timedelta(hours=9))
+
+    records = [
+        dict(record) | {
+            "created_at": datetime.fromisoformat(
+                record["created_at"]
+            ).replace(tzinfo=timezone.utc).astimezone(jst).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+        }
+        for record in records
+    ]
+
     return render_template(
         "history.html",
         records=records
@@ -116,6 +130,15 @@ def history_detail(record_id):
 
     if record is None:
         return "解析履歴が見つかりません", 404
+
+    jst = timezone(timedelta(hours=9))
+
+    record = dict(record)
+    record["created_at"] = datetime.fromisoformat(
+        record["created_at"]
+    ).replace(tzinfo=timezone.utc).astimezone(jst).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
 
     return render_template(
         "history_detail.html",
