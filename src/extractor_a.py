@@ -73,6 +73,7 @@ def extract_a(text):
             .replace("　", "")
         )
 
+        company_name = re.sub(r"(?<=[A-Z])o$", "", company_name)
         data["会社名"] = company_name
 
     # ------------------------
@@ -180,14 +181,18 @@ def extract_a(text):
     # ------------------------
     # 商品明細抽出
     # ------------------------
-
     data["明細"] = []
-
     lines = text.split("\n")
-
     for line in lines:
 
-        if "合計" in line:
+        # 明細ではない請求書情報を除外
+        if any(keyword in line for keyword in [
+            "合計",
+            "請求日",
+            "発行日",
+            "請求金額",
+            "ご請求金額",
+        ]):
             continue
 
         # OCR誤認識補正
@@ -243,12 +248,10 @@ def extract_a(text):
         # 旧形式
         # 商品名 金額
         # ------------------------
-
         item = re.search(
-            r"(.+?)\s+([0-9０-９,.]+)\s*[円日]",
-            line
-        )
-
+        r"(.+?)\s+([0-9０-９,.]+)\s*円",
+        line
+    )
 
         if item:
 

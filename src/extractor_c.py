@@ -55,11 +55,15 @@ def extract_c(text):
             key=len
         )
 
-        data["会社名"] = (
+        company_name = (
             company_name
             .replace(" ", "")
             .replace("　", "")
         )
+
+        company_name = re.sub(r"^[⑩-⑳]+", "", company_name)
+
+        data["会社名"] = company_name
 
 
 
