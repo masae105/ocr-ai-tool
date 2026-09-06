@@ -52,10 +52,16 @@ def process_invoice(file_path):
 
     # 画像前処理
     processed_image = preprocess_image(image)
-
-
     # OCR取得
     text = extract_text(processed_image)
+
+    # 比較用：前処理なし
+    raw_text = extract_text(image)
+
+    print("=== OCR 前処理なし ===")
+    print(raw_text)
+    print("=== OCR 前処理あり ===")
+    print(text)
 
 
     # 座標付きOCR

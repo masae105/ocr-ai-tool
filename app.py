@@ -1,13 +1,6 @@
 import os
 import sys
 
-import pytesseract
-
-print("=== Tesseract Environment ===")
-print("Tesseract:", pytesseract.get_tesseract_version())
-print("Languages:", pytesseract.get_languages(config=""))
-print("=============================")
-
 from flask import (
     Flask,
     render_template,
