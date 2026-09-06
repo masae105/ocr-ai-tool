@@ -8,6 +8,9 @@ DATABASE = "database.db"
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "1234")
 
+DEMO_USERNAME = os.environ.get("DEMO_USERNAME", "demo")
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "demo1234")
+
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -82,6 +85,20 @@ def init_db():
             "INSERT INTO users (username, password) VALUES (?, ?)",
             (ADMIN_USERNAME, password_hash)
         )
+
+        # デモユーザーが存在しない場合は作成
+        demo_user = conn.execute(
+            "SELECT id FROM users WHERE username = ?",
+            (DEMO_USERNAME,)
+        ).fetchone()
+
+        if demo_user is None:
+            demo_password_hash = generate_password_hash(DEMO_PASSWORD)
+
+            conn.execute(
+                "INSERT INTO users (username, password) VALUES (?, ?)",
+                (DEMO_USERNAME, demo_password_hash)
+            )
 
     conn.commit()
     conn.close()
@@ -227,3 +244,7 @@ if __name__ == "__main__":
         )
 
     conn.close()
+    if __name__ == "__main__":
+        init_db()
+
+        conn = get_db()
