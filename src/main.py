@@ -51,18 +51,9 @@ def process_invoice(file_path):
     image = Image.open(path)
 
     # 画像前処理
-    processed_image = preprocess_image(image)
+    processed_image = image
     # OCR取得
     text = extract_text(processed_image)
-
-    # 比較用：前処理なし
-    raw_text = extract_text(image)
-
-    print("=== OCR 前処理なし ===")
-    print(raw_text)
-    print("=== OCR 前処理あり ===")
-    print(text)
-
 
     # 座標付きOCR
     ocr_data = extract_data(processed_image)
@@ -70,7 +61,6 @@ def process_invoice(file_path):
     lines = group_by_line(
         ocr_data
     )
-
 
     # Lv3 レイアウト領域解析
     coordinate_regions = detect_regions(lines)
