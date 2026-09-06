@@ -1,6 +1,12 @@
 import os
 import sys
 
+import pytesseract
+
+print("=== Tesseract Environment ===")
+print("Tesseract:", pytesseract.get_tesseract_version())
+print("=============================")
+
 from flask import (
     Flask,
     render_template,
@@ -17,6 +23,7 @@ sys.path.append(
         "src"
     )
 )
+
 
 from main import process_invoice
 from excel import save_to_excel
