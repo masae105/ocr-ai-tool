@@ -36,17 +36,15 @@ def extract_c(text):
     # ------------------------
 
     companies = re.findall(
-        r"(?:株式会社\s*[^\n〒()（）]{1,20}|[^\n〒()（）]{1,20}株式会社)",
+        r"(?:株式会社\s*[^ \n〒()（）]{1,20}|[^ \n〒()（）]{1,20}株式会社)",
         text
     )
-
 
     companies = [
         c.strip()
         for c in companies
         if "御中" not in c
     ]
-
 
     if companies:
 
@@ -61,11 +59,21 @@ def extract_c(text):
             .replace("　", "")
         )
 
-        company_name = re.sub(r"^[⑩-⑳]+", "", company_name)
+        # OCRで会社名の先頭に入った記号ノイズを除去
+        company_name = re.sub(
+            r"^[⑩-⑳]+",
+            "",
+            company_name
+        )
+
+        # Render環境で住所が会社名の前に結合された場合の補正
+        company_name = re.sub(
+            r"^.*\d[-0-9]*の?\d*",
+            "",
+            company_name
+        )
 
         data["会社名"] = company_name
-
-
 
     # ------------------------
     # 請求日抽出

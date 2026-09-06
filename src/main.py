@@ -55,10 +55,7 @@ def process_invoice(file_path):
 
     # OCR取得
     text = extract_text(processed_image)
-    print("=== OCR RAW TEXT ===", flush=True)
-    print(text, flush=True)
-    print("====================", flush=True)
-
+    
     # 座標付きOCR
     ocr_data = extract_data(processed_image)
 
