@@ -52,6 +52,7 @@ def process_invoice(file_path):
 
     # 画像前処理
     processed_image = image
+    
     # OCR取得
     text = extract_text(processed_image)
 

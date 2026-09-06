@@ -30,9 +30,15 @@ def extract_b(text):
     # 会社名抽出
     # ------------------------
     companies = re.findall(
-        r"株式会社\s*[A-Za-zＡ-Ｚａ-ｚ0-9一-龥ぁ-んァ-ヶー・＆&.-]{1,20}",
-        text
+    r"株式会社\s*[A-Za-zＡ-Ｚａ-ｚ0-9一-龥ぁ-んァ-ヶー・＆&.-]{1,20}",
+    text
     )
+
+    companies = [
+        c.strip()
+        for c in companies
+        if "御中" not in c
+    ]
 
     if companies:
         company_name = max(companies, key=len)
@@ -42,7 +48,6 @@ def extract_b(text):
             .replace(" ", "")
             .replace("　", "")
         )
-
     # ------------------------
     # 請求日抽出
     # ------------------------
@@ -101,60 +106,71 @@ def extract_b(text):
 
             break
 
-    # ------------------------
+   # ------------------------
     # 商品明細抽出
     # ------------------------
-
     data["明細"] = []
-
 
     lines = text.split("\n")
 
+    item_names = []
+    amount_values = []
 
     for line in lines:
+        line = line.strip()
 
-
-        if "合計" in line:
+        if not line:
             continue
 
-        # OCR誤認識補正
-        line = line.replace("S.", "5.")
-        line = line.replace("「", "")
-        line = line.replace("]", "")
-        line = line.replace("ぎ", "")
-        line = line.replace("、", ",")
-        line = line.replace("|", "")
-
         # ------------------------
-        # 新形式
-        # 商品名 数量 単価 金額
+        # 商品名候補
+        # 例:
+        # 1 ワイヤレスマウス
+        # 2 。 キーボード
+        # 3 24インチモニター
         # ------------------------
-        detail = re.search(
-            r"^\s*\d+\s+(.+?)\s+\d+\s+[\¥\\]?[0-9０-９,.．]+\s+[\¥\\]?[0-9０-９,.．]+",
+        item_match = re.match(
+            r"^\s*\d+\s*[。.．]?\s*(.+)$",
             line
         )
 
-        if detail:
-            item_name = detail.group(1).strip()
-            amounts = re.findall(
-                r"[\¥\\]?[0-9０-９,.．]+",
-                line
+        if item_match:
+            item_name = item_match.group(1).strip()
+
+            # 金額だけの文字列は商品名から除外
+            # 例: \36,500- / ¥36,500 / 36,500-
+            if not re.fullmatch(
+                r"[¥\\]?[0-9０-９,.．]+-?",
+                item_name
+            ):
+                item_names.append(item_name)
+        # ------------------------
+        # 金額行候補
+        # 例:
+        # \3,182 \3,182
+        # ------------------------
+        amounts = re.findall(
+            r"[¥\\][0-9０-９][0-9０-９,.．]*",
+            line
+        )
+
+        if len(amounts) >= 2:
+            amount_values.append(
+                clean_amount(amounts[-1])
             )
 
-            if amounts:
-                amount = clean_amount(
-                    amounts[-1]
-                )
 
-                data["明細"].append(
-                    {
-                        "商品名": item_name,
-                        "金額": amount
-                    }
-                )
-
-                continue
-
+    # 商品名と金額を順番に対応付け
+    for item_name, amount in zip(
+        item_names,
+        amount_values
+    ):
+        data["明細"].append(
+            {
+                "商品名": item_name,
+                "金額": amount
+            }
+        )
     # ------------------------
     # 明細ノイズ除去
     # ------------------------
