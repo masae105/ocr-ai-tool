@@ -226,7 +226,7 @@ def index():
 
                 try:
 
-                    print("OCR処理開始")
+                    print("OCR処理開始", flush=True)
 
                     start = time.perf_counter()
 
