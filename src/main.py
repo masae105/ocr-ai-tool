@@ -1,4 +1,5 @@
 import os
+import time
 
 from PIL import Image
 
@@ -48,10 +49,14 @@ def process_invoice(file_path):
     processed_image = image
 
     # OCR取得
+    start = time.perf_counter()
     text = extract_text(processed_image)
+    print(f"文字OCR: {time.perf_counter() - start:.2f}秒")
 
     # 座標付きOCR
+    start = time.perf_counter()
     ocr_data = extract_data(processed_image)
+    print(f"座標OCR: {time.perf_counter() - start:.2f}秒")
 
     lines = group_by_line(ocr_data)
 

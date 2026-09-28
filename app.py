@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from flask import (
     Flask,
@@ -227,12 +228,13 @@ def index():
 
                     print("OCR処理開始")
 
+                    start = time.perf_counter()
+
                     data = process_invoice(file_path)
 
-                    print("OCR処理終了")
+                    elapsed = time.perf_counter() - start
 
-                    print("OCR解析結果:")
-                    print(data)
+                    print(f"OCR処理終了: {elapsed:.2f}秒")
 
                     save_invoice_record(
                         session["user_id"],
