@@ -51,12 +51,12 @@ def process_invoice(file_path):
     # OCR取得
     start = time.perf_counter()
     text = extract_text(processed_image)
-    print(f"文字OCR: {time.perf_counter() - start:.2f}秒")
+    print(f"文字OCR: {time.perf_counter() - start:.2f}秒", flush=True)
 
     # 座標付きOCR
     start = time.perf_counter()
     ocr_data = extract_data(processed_image)
-    print(f"座標OCR: {time.perf_counter() - start:.2f}秒")
+    print(f"座標OCR: {time.perf_counter() - start:.2f}秒", flush=True)
 
     lines = group_by_line(ocr_data)
 
