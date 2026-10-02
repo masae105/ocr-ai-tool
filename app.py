@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from dotenv import load_dotenv
 
 from flask import (
     Flask,
@@ -26,8 +27,10 @@ from database import get_db, save_invoice_record, init_db
 from datetime import datetime, timezone, timedelta
 from werkzeug.security import check_password_hash
 
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "ocr-ai-tool-secret-key"
+app.secret_key = os.environ["SECRET_KEY"]
 
 init_db()
 
