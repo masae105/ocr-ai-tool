@@ -13,18 +13,6 @@ else:
     # Linux（Renderなど）
     pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
-def extract_text(image):
-    """
-    画像から文字を抽出する
-    """
-
-    text = pytesseract.image_to_string(
-        image,
-        lang="jpn"
-    )
-
-    return text
-
 def extract_data(image):
     """
     OCR結果 + 座標情報を取得する

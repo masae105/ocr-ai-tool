@@ -10,12 +10,10 @@ from extractor_a import extract_a
 from extractor_b import extract_b
 from extractor_c import extract_c
 from feature_extractor import extract_features
-from layout_analyzer import detect_regions, group_by_line
+from layout_analyzer import group_by_line
 from layout_detector import detect_layout
 from loader import load_file
 from ocr import extract_data
-from region_detector import split_regions
-from region_fusion import merge_regions
 from validator import check_total_amount
 
 
@@ -54,6 +52,9 @@ def process_invoice(file_path):
     # OCRは座標付きで1回だけ実行
     start = time.perf_counter()
     ocr_data = extract_data(processed_image)
+    if not ocr_data:
+        raise ValueError("OCRで文字を1文字も認識できませんでした")
+
     print(
         f"OCR: {time.perf_counter() - start:.2f}秒",
         flush=True
@@ -66,18 +67,6 @@ def process_invoice(file_path):
     text = "\n".join(
         line["text"]
         for line in lines
-    )
-
-
-    lines = group_by_line(ocr_data)
-
-    # Lv3 レイアウト領域解析
-    coordinate_regions = detect_regions(lines)
-    keyword_regions = split_regions(lines)
-
-    regions = merge_regions(
-        coordinate_regions,
-        keyword_regions,
     )
 
     # OCR文字補正
