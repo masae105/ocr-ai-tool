@@ -6,3 +6,4 @@ pdf2image
 gunicorn
 flask
 python-dotenv
+openai
