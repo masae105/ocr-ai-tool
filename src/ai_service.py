@@ -1,5 +1,30 @@
+import warnings
+
 from ai_config import get_provider_name
 from ai_mock_provider import MockAIProvider
+from ai_provider import AIProvider
+
+# Step 3: from ai_openai_provider import OpenAIProvider
+
+
+def _create_provider(provider_name: str) -> AIProvider:
+    """設定された Provider 名に応じて AIProvider 実装を返します。"""
+    if provider_name == "mock":
+        return MockAIProvider()
+
+    if provider_name == "openai":
+        # Step 3 で return OpenAIProvider() に差し替え
+        warnings.warn(
+            (
+                "AI_PROVIDER=openai ですが OpenAI Provider は未実装のため、"
+                "暫定的に Mock を使用します。"
+            ),
+            UserWarning,
+            stacklevel=2,
+        )
+        return MockAIProvider()
+
+    return MockAIProvider()
 
 
 class AIService:
@@ -7,13 +32,8 @@ class AIService:
 
     def __init__(self):
         """設定に応じて使うAI Providerを準備します。"""
-        provider_name = get_provider_name()
-
-        if provider_name == "mock":
-            self.provider = MockAIProvider()
-        else:
-            # 将来 OpenAI を追加するための分岐です。
-            self.provider = MockAIProvider()
+        self._provider_name = get_provider_name()
+        self.provider = _create_provider(self._provider_name)
 
     def analyze(self, data: dict) -> dict:
         """
