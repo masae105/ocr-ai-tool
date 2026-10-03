@@ -14,8 +14,38 @@ _RESULT_SCHEMA = {
         "severity": {"type": "string", "enum": ["low", "medium", "high"]},
         "issues": {"type": "array", "items": {"type": "string"}},
         "recommendation": {"type": "string"},
+        "correction_candidates": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "field": {"type": "string"},
+                    "current_value": {"type": "string"},
+                    "suggested_value": {"type": "string"},
+                    "reason": {"type": "string"},
+                    "confidence": {
+                        "type": "string",
+                        "enum": ["low", "medium", "high"],
+                    },
+                },
+                "required": [
+                    "field",
+                    "current_value",
+                    "suggested_value",
+                    "reason",
+                    "confidence",
+                ],
+                "additionalProperties": False,
+            },
+        },
     },
-    "required": ["status", "severity", "issues", "recommendation"],
+    "required": [
+        "status",
+        "severity",
+        "issues",
+        "recommendation",
+        "correction_candidates",
+    ],
     "additionalProperties": False,
 }
 
@@ -57,7 +87,16 @@ class OpenAIProvider(AIProvider):
             model=MODEL,
             instructions=(
                 "請求書の抽出データを整合性チェックしてください。"
-                "渡された情報だけを使い、不明な情報を推測しないでください。"
+                "OCR/Lv3から渡された情報だけを使い、"
+                "元データから正しい値を確実に判断できない場合は補正候補を作らないでください。"
+                "存在しない商品名や金額などを推測・創作しないでください。"
+                "correction_candidatesは自動修正ではなく、人が確認するための候補です。"
+                "明らかなOCRノイズや文字列混入は、正しい値を確実に判断できる場合に限り"
+                "補正候補にしてかまいません。"
+                "confidenceはlow、medium、highのいずれかにしてください。"
+                "問題がなければcorrection_candidatesは空配列にしてください。"
+                "金額を変更する候補は、渡された金額情報だけを根拠にしてください。"
+                "suggested_valueが推測になる場合は候補を作らないでください。"
                 "金額チェックが「NG」の場合は問題として扱ってください。"
                 "問題がなければstatusはnormal、severityはlowにしてください。"
                 "問題があればstatusはwarning、severityはmediumまたはhighにしてください。"
@@ -87,6 +126,7 @@ class OpenAIProvider(AIProvider):
             "severity",
             "issues",
             "recommendation",
+            "correction_candidates",
         }
         if result.keys() != required_fields:
             raise ValueError("OpenAI APIの解析結果に必須項目がありません。")
@@ -108,6 +148,31 @@ class OpenAIProvider(AIProvider):
             raise ValueError("OpenAI APIのissuesが不正です。")
         if not isinstance(result["recommendation"], str):
             raise ValueError("OpenAI APIのrecommendationが不正です。")
+        if not isinstance(result["correction_candidates"], list):
+            raise ValueError("OpenAI APIのcorrection_candidatesが不正です。")
+        candidate_fields = {
+            "field",
+            "current_value",
+            "suggested_value",
+            "reason",
+            "confidence",
+        }
+        for candidate in result["correction_candidates"]:
+            if not isinstance(candidate, dict) or candidate.keys() != candidate_fields:
+                raise ValueError("OpenAI APIの補正候補の形式が不正です。")
+            if not all(
+                isinstance(candidate[field], str)
+                for field in (
+                    "field",
+                    "current_value",
+                    "suggested_value",
+                    "reason",
+                    "confidence",
+                )
+            ):
+                raise ValueError("OpenAI APIの補正候補の項目が不正です。")
+            if candidate["confidence"] not in {"low", "medium", "high"}:
+                raise ValueError("OpenAI APIの補正候補のconfidenceが不正です。")
 
         return {
             "source": "openai",
@@ -115,4 +180,5 @@ class OpenAIProvider(AIProvider):
             "severity": result["severity"],
             "issues": result["issues"],
             "recommendation": result["recommendation"],
+            "correction_candidates": result["correction_candidates"],
         }
