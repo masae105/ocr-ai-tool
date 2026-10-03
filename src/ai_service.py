@@ -35,6 +35,17 @@ class AIService:
         self._provider_name = get_provider_name()
         self.provider = _create_provider(self._provider_name)
 
+    def _build_fallback_result(self) -> dict:
+        return {
+            "source": self._provider_name,
+            "status": "warning",
+            "severity": "medium",
+            "issues": [
+                "AI解析を実行できませんでした。しばらくしてから再度お試しください。"
+            ],
+            "recommendation": "請求書の抽出結果は表示されています。内容は原本と照合してご確認ください。",
+        }
+
     def analyze(self, data: dict) -> dict:
         """
         Lv3で解析されたデータを受け取り、
@@ -46,4 +57,7 @@ class AIService:
         Returns:
             dict: AI Providerが返した解析結果
         """
-        return self.provider.analyze(data)
+        try:
+            return self.provider.analyze(data)
+        except Exception:
+            return self._build_fallback_result()
