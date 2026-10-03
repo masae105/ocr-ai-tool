@@ -1,10 +1,7 @@
-import warnings
-
 from ai_config import get_provider_name
 from ai_mock_provider import MockAIProvider
 from ai_provider import AIProvider
-
-# Step 3: from ai_openai_provider import OpenAIProvider
+from ai_openai_provider import OpenAIProvider
 
 
 def _create_provider(provider_name: str) -> AIProvider:
@@ -13,16 +10,7 @@ def _create_provider(provider_name: str) -> AIProvider:
         return MockAIProvider()
 
     if provider_name == "openai":
-        # Step 3 で return OpenAIProvider() に差し替え
-        warnings.warn(
-            (
-                "AI_PROVIDER=openai ですが OpenAI Provider は未実装のため、"
-                "暫定的に Mock を使用します。"
-            ),
-            UserWarning,
-            stacklevel=2,
-        )
-        return MockAIProvider()
+        return OpenAIProvider()
 
     return MockAIProvider()
 
