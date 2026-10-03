@@ -7,3 +7,4 @@ gunicorn
 flask
 python-dotenv
 openai
+brotlicffi==1.2.0.2
